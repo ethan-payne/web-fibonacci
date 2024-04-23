@@ -42,6 +42,11 @@ struct FibonacciParameters {
 
 /// POST Request to load Fibonacci page with result.
 async fn post_fibonacci(form: web::Form<FibonacciParameters>) -> HttpResponse {
+    if form.n > 93 {
+        return HttpResponse::BadRequest()
+            .content_type("text/html")
+            .body("Please enter a number less than 94.");
+    }
     let (fib_number, fib_duration) = fibonacci(form.n);
     
     let response =
