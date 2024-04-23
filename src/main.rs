@@ -18,7 +18,7 @@ async fn main() {
 
 }
 
-/// GET Request to retrieve home page
+/// GET Request to retrieve home page.
 async fn get_index() -> HttpResponse {
     HttpResponse::Ok()
         .content_type("text/html")
@@ -49,7 +49,7 @@ async fn post_fibonacci(form: web::Form<FibonacciParameters>) -> HttpResponse {
         .body(response)
 }
 
-/// Calculates the n-th Fibonacci number
+/// Calculates the n-th Fibonacci number.
 fn fibonacci(n: u64) -> u64 {
     let mut a = 0;
     let mut b = 1;
