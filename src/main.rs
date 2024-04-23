@@ -1,5 +1,6 @@
 use::actix_web::{web, App, HttpResponse, HttpServer};
 use serde::Deserialize;
+use std::time::Instant;
 
 #[actix_web::main]
 async fn main() {
@@ -41,29 +42,35 @@ struct FibonacciParameters {
 
 /// POST Request to load Fibonacci page with result.
 async fn post_fibonacci(form: web::Form<FibonacciParameters>) -> HttpResponse {
+    let (fib_number, fib_duration) = fibonacci(form.n);
+    
     let response =
-        format!("The n-th Fibonacci numbers is: <b>{}</b>", fibonacci(form.n));
+        format!("The {}-th Fibonacci numbers is: <b>{}</b>.<br>
+                    It took {}s to calculate this number.", 
+        form.n, fib_number, fib_duration);
     
     HttpResponse::Ok()
         .content_type("text/html")
         .body(response)
 }
 
-/// Calculates the n-th Fibonacci number.
-fn fibonacci(n: u64) -> u64 {
+/// Calculates the n-th Fibonacci number and time taken to calculate it.
+fn fibonacci(n: u64) -> (u64, f64) {
+    let start = Instant::now();
+
     let mut a = 0;
     let mut b = 1;
     
     if n == 1 {
-        b
+        (b, start.elapsed().as_secs_f64())
     } else if n == 0 {
-        a
+        (a, start.elapsed().as_secs_f64())
     } else {
         for _ in 2..(n+1) {
             let c = a + b;
             a = b;
             b = c;
         }
-        b
+        (b, start.elapsed().as_secs_f64())
     }
 }
