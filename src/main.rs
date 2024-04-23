@@ -10,7 +10,9 @@ async fn main() {
             .route("/fibonacci", web::post().to(post_fibonacci))
     });
 
-    println!("Serving on http://localhost:3000...");
+    println!("Open the below address in your web browser:");
+    println!("Currently serving on http://localhost:3000...");
+    
     server
         .bind("127.0.0.1:3000").expect("error binding to server address")
         .run()
