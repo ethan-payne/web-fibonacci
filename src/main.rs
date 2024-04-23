@@ -5,11 +5,10 @@ use serde::Deserialize;
 async fn main() {
     let server = HttpServer::new(|| {
         App::new()
-            .route("/", web::get().to(get_home))
+            .route("/", web::get().to(get_index))
             .route("/fibonacci", web::post().to(post_fibonacci))
     });
 
-    // OK
     println!("Serving on http://localhost:3000...");
     server
         .bind("127.0.0.1:3000").expect("error binding to server address")
@@ -19,7 +18,8 @@ async fn main() {
 
 }
 
-async fn get_home() -> HttpResponse {
+/// GET Request to retrieve home page
+async fn get_index() -> HttpResponse {
     HttpResponse::Ok()
         .content_type("text/html")
         .body(
@@ -39,6 +39,7 @@ struct FibonacciParameters {
     n: u64,
 }
 
+/// POST Request to load Fibonacci page with result.
 async fn post_fibonacci(form: web::Form<FibonacciParameters>) -> HttpResponse {
     let response =
         format!("The n-th Fibonacci numbers is: <b>{}</b>", fibonacci(form.n));
@@ -48,6 +49,7 @@ async fn post_fibonacci(form: web::Form<FibonacciParameters>) -> HttpResponse {
         .body(response)
 }
 
+/// Calculates the n-th Fibonacci number
 fn fibonacci(n: u64) -> u64 {
     let mut a = 0;
     let mut b = 1;
