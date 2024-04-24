@@ -1,13 +1,14 @@
 use::actix_web::{web, App, HttpResponse, HttpServer};
 use serde::Deserialize;
 use std::time::Instant;
+use std::hint::black_box;
 
 #[actix_web::main]
 async fn main() {
     let server = HttpServer::new(|| {
         App::new()
             .route("/", web::get().to(get_index))
-            .route("/fibonacci", web::post().to(post_fibonacci))
+            .route("/fibonacci-benchmark", web::post().to(post_fibonacci))
     });
 
     println!("Open the below address in your web browser:");
@@ -27,9 +28,9 @@ async fn get_index() -> HttpResponse {
         .content_type("text/html")
         .body(
             r#"
-                <title>Fibonacci Calculator</title>
+                <title>Fibonacci Benchmark Calculator</title>
                 <i>Enter n: </i>
-                <form action="/fibonacci" method="post">
+                <form action="/fibonacci-benchmark" method="post">
                 <input type="text" name="n"/>
                 <button type="submit">Compute nth Fibonacci</button>
                 </form>
@@ -49,35 +50,33 @@ async fn post_fibonacci(form: web::Form<FibonacciParameters>) -> HttpResponse {
             .content_type("text/html")
             .body("Please enter a number less than 94.");
     }
-    let (fib_number, fib_duration) = fibonacci(form.n);
     
+    let fib_number = fibonacci(form.n);
+    let mut total_time: f64 = 0.0;
+
+    for _ in 1..20 {
+        let start_time = Instant::now();
+        black_box(fibonacci(black_box(form.n)));
+        let elasped_time = start_time.elapsed().as_secs_f64();
+        total_time += elasped_time;
+    }
+
+    let average_time = total_time / 20.0;
+
     let response =
         format!("The {}-th Fibonacci numbers is: <b>{}</b>.<br>
-                    It took {}s to calculate this number.", 
-        form.n, fib_number, fib_duration);
+                    It took on average {}s to calculate this number with 20 benchmarks.", 
+        form.n, fib_number, average_time);
     
     HttpResponse::Ok()
         .content_type("text/html")
         .body(response)
 }
 
-/// Calculates the n-th Fibonacci number and time taken to calculate it.
-fn fibonacci(n: u64) -> (u64, f64) {
-    let start = Instant::now();
-
-    let mut a = 0;
-    let mut b = 1;
-    
-    if n == 1 {
-        (b, start.elapsed().as_secs_f64())
-    } else if n == 0 {
-        (a, start.elapsed().as_secs_f64())
-    } else {
-        for _ in 2..(n+1) {
-            let c = a + b;
-            a = b;
-            b = c;
-        }
-        (b, start.elapsed().as_secs_f64())
+/// Calculates the n-th Fibonacci number using (slow) recursion.
+fn fibonacci(n: u64) -> u64 {
+    match n {
+        1 | 0 => n,
+        _ => fibonacci(n - 1) + fibonacci(n - 2),
     }
 }
